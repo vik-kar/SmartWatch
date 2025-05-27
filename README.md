@@ -1,11 +1,17 @@
-ESP-IDF template app
-====================
+# ESP32 Smart Watch
 
-This is a template application to be used with [Espressif IoT Development Framework](https://github.com/espressif/esp-idf).
+This project implements a basic smartwatch using the ESP32, built with ESP-IDF. It integrates FreeRTOS with bare-metal I2C drivers to communicate with multiple sensors and an OLED display.
 
-Please check [ESP-IDF docs](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for getting started instructions.
+## Features
 
-*Code in this repository is in the Public Domain (or CC0 licensed, at your option.)
-Unless required by applicable law or agreed to in writing, this
-software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.*
+- Real-time step count and heart rate monitoring
+- Custom I2C driver for communication with sensors and display
+- Task scheduling using FreeRTOS
+- OLED display output using SSD1306 over I2C
+
+## Components
+
+- ESP32 Dev Board
+- SSD1306 OLED Display
+- MAX30102 Heart Rate Sensor
+- ADXL345 Accelerometer
