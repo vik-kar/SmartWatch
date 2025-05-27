@@ -1,0 +1,20 @@
+# ESP-IDF build system
+build/
+*.elf
+*.bin
+*.map
+
+# Project-specific config
+sdkconfig
+sdkconfig.old
+
+# IDE & OS clutter
+.vscode/
+*.log
+*.pyc
+__pycache__/
+.DS_Store
+
+# Python virtual envs
+.venv/
+.env/
