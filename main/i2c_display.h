@@ -11,5 +11,8 @@
 /* screen address */
 #define SCREEN_ADDR		(0x3C)
 
+/* function prototypes */
+void i2c_init(void);
+
 
 #endif /* MAIN_I2C_DISPLAY_H_ */
