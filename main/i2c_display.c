@@ -9,6 +9,8 @@
 #define I2C_SLAVE_ADDR_REG  		(0x3FF53010)
 #define I2C_CTR_REG					(0x3FF53004)	
 #define I2C_SR_REG					(0x3FF53008)
+#define I2C_SCL_LOW_PERIOD_REG		(0x3FF53000)
+#define I2C_SCL_HIGH_PERIOD_REG		(0x3FF53038)
 #define TRANSMIT_FIFO				(0x3FF5301C)
 #define SLAVE_ADDR_7_BIT			(SCREEN_ADDR << 1)
 
@@ -33,19 +35,20 @@
 
 void i2c_init(void){
 	/* Create register pointers */
-	volatile uint32_t *i2c0					= (volatile uint32_t *) I2C0;
-	volatile uint32_t *i2c_slave_addr_reg 	= (volatile uint32_t *) I2C_SLAVE_ADDR_REG;
-	volatile uint32_t *i2c_ctr_reg 			= (volatile uint32_t *) I2C_CTR_REG;
-	volatile uint32_t *i2c_sr_reg 			= (volatile uint32_t *) I2C_SR_REG;
+	volatile uint32_t *i2c0					       = (volatile uint32_t *) I2C0;
+	volatile uint32_t *i2c_slave_addr_reg 	       = (volatile uint32_t *) I2C_SLAVE_ADDR_REG;
+	volatile uint32_t *i2c_ctr_reg 			       = (volatile uint32_t *) I2C_CTR_REG;
+	volatile uint32_t *i2c_sr_reg 				   = (volatile uint32_t *) I2C_SR_REG;
 	
 	volatile uint32_t *gpio_func21_out_sel_cfg_reg = (volatile uint32_t *) GPIO_FUNC21_OUT_SEL_CFG_REG;
 	volatile uint32_t *gpio_func22_out_sel_cfg_reg = (volatile uint32_t *) GPIO_FUNC22_OUT_SEL_CFG_REG;
 	
-	volatile uint32_t *gpio_enable_w1ts_reg	= (volatile uint32_t *) GPIO_ENABLE_W1TS_REG;
-	volatile uint32_t *io_mux_21_reg		= (volatile uint32_t *) IO_MUX_21_REG;
-	
-	volatile uint32_t *gpio_pin21_reg	= (volatile uint32_t *) GPIO_PIN21_REG;
-	volatile uint32_t *gpio_pin22_reg	= (volatile uint32_t *) GPIO_PIN22_REG;
+	volatile uint32_t *gpio_enable_w1ts_reg		   = (volatile uint32_t *) GPIO_ENABLE_W1TS_REG;
+	volatile uint32_t *io_mux_21_reg			   = (volatile uint32_t *) IO_MUX_21_REG;
+	volatile uint32_t *gpio_pin21_reg			   = (volatile uint32_t *) GPIO_PIN21_REG;
+	volatile uint32_t *gpio_pin22_reg			   = (volatile uint32_t *) GPIO_PIN22_REG;
+	volatile uint32_t *i2c_scl_low_period_reg	   = (volatile uint32_t *) I2C_SCL_LOW_PERIOD_REG;
+	volatile uint32_t *i2c_scl_high_period_reg	   = (volatile uint32_t *) I2C_SCL_HIGH_PERIOD_REG;
 	
 	/* enable I2C0 peripheral clock, will do later if necessary */
 	
@@ -80,7 +83,16 @@ void i2c_init(void){
 	*/
 	*i2c_ctr_reg |= (1U << 4);
 	
-	/* Now, let's move onto configuring the clock */
+	/* Now, let's move onto configuring the clock 
+	   - We need to set the I2C bus speed. The I2C clock is controlled by adjusting low & high periods of SCL
+	   - APB (Advanced Peripheral Bus) clock is 80 MHz by default
+	   - To get a 100 kHz SCL signal (period = 10 microsec)
+	     - 10 us x 80 MHz = 800 cycles total --> low 400 cycles, high 400 cycles.
+	*/
+	*i2c_scl_high_period_reg = 400;
+	*i2c_scl_low_period_reg  = 400;
+	
+	
 	
 
 }
