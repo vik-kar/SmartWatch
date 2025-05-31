@@ -9,7 +9,7 @@
 #define MAIN_I2C_DISPLAY_H_
 
 /* screen address */
-#define SCREEN_ADDR		(0x3C)
+#define SCREEN_ADDR		(0x3C) //00111100
 
 /* function prototypes */
 void i2c_init(void);
