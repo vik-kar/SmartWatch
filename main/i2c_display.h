@@ -20,9 +20,10 @@
 #define DISPLAY_OFF		0xAE
 #define DISPLAY_ON		0xAF
 
+/* function prototypes */
 
 void i2c_master_init();
-void display_toggle(uint8_t cmd);
-
+void send_command(uint8_t cmd);
+void display_init();
 
 #endif /* MAIN_I2C_DISPLAY_H_ */

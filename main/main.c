@@ -6,11 +6,12 @@
 
 void app_main(){
 	i2c_master_init();
+	display_init();
 
 	while(1){
-		display_toggle(DISPLAY_ON);
+		send_command(DISPLAY_ON);
 		vTaskDelay(pdMS_TO_TICKS(2000));
-		display_toggle(DISPLAY_OFF);
+		send_command(DISPLAY_OFF);
 		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
