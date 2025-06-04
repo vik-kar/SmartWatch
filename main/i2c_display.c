@@ -28,7 +28,7 @@ void display_toggle(uint8_t cmd){
 	i2c_master_write_byte(command, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
 
 	/* Send control byte 0x80, indicating one byte is to be sent after, which will be a command */
-	i2c_master_write_byte(command, cmd, true);
+	i2c_master_write_byte(command, DISPLAY_ONE_CMD, true);
 
 	/* send the command, which is 0xAE - turns display off */
 	i2c_master_write_byte(command, cmd, true);
