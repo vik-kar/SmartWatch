@@ -8,13 +8,13 @@
 #ifndef MAIN_I2C_DISPLAY_H_
 #define MAIN_I2C_DISPLAY_H_
 
-/* screen address */
-#include <stdint.h>
-#define SCREEN_ADDR		(0x3C) //00111100
-#include <stdbool.h>
-/* function prototypes */
-void i2c_init(void);
-void i2c_write(uint8_t cmd);
+/* Define configuration parameters */
+#define SDA_PIN 	GPIO_NUM_21
+#define SCL_PIN		GPIO_NUM_22
+#define I2C_FREQ 	1000000
+#define I2C_PORT	I2C_NUM_0
+
+void i2c_master_init();
 
 
 #endif /* MAIN_I2C_DISPLAY_H_ */
