@@ -1,6 +1,6 @@
 # ESP32 Smart Watch
 
-This project implements a basic smartwatch using the ESP32, built with ESP-IDF. It integrates FreeRTOS with bare-metal I2C drivers to communicate with multiple sensors and an OLED display.
+This project implements a basic smartwatch using the ESP32, built with ESP-IDF. It integrates FreeRTOS with bare-metal (soon) I2C drivers to communicate with multiple sensors and an OLED display.
 
 ## Features
 
