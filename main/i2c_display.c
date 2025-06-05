@@ -92,7 +92,7 @@ void display_init(){
 	send_command(0x40);
 
 	/* Resume display from RAM content - 0xA4 = display what's in GDDRAM */
-	send_command(0xA4);
+	send_command(0xA5);
 
 	/* 0xA6 = white on black (normal). 0xA7 = black on white (inverted). */
 	send_command(0xA6);
