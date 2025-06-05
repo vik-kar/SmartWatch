@@ -116,3 +116,44 @@ void display_init(){
 	send_command(DISPLAY_ON);
 }
 
+void display_write_char(char c, uint8_t col, uint8_t page){
+	/* check for out of bounds */
+	if (c < 0 || c > 127) {
+		return;
+	}
+
+	/* Set page */
+	send_command(0xB0 + page);
+
+	/* Set column */
+
+	/*
+	 * This sets the lower nibble (bits 0–3) of the column address.
+	 * The SSD1306 requires the lower 4 bits to be set using command 0x00–0x0F.
+	 *
+	 * Example: if col = 45 (0x2D, binary 0010 1101)
+	 *   col & 0x0F = 0x0D (binary 1101)
+	 *   0x00 + 0x0D = 0x0D
+	 * → Sends command 0x0D to set lower nibble to 13
+	 */
+	send_command(0x00 + (col & 0x0F));
+
+	/*
+	 * This sets the upper nibble (bits 4–7) of the column address.
+	 * The SSD1306 requires the upper 4 bits to be set using command 0x10–0x1F.
+	 *
+	 * Example: col = 45 (0x2D, binary 0010 1101)
+	 *   col >> 4 = 0x02 (binary 0010)
+	 *   0x10 + 0x02 = 0x12
+	 * → Sends command 0x12 to set upper nibble to 2
+	 *
+	 * Actual column = (upper << 4) | lower = (2 << 4) | 13 = 32 + 13 = 45 ✅
+	 */
+	send_command(0x10 + ((col >> 4) & 0x0F));
+
+	/* Write the 8 bytes of font data */
+	for(int i = 0; i < 8; i++){
+		send_data(font8x8_basic_tr[(uint8_t)c][i]);
+	}
+}
+
