@@ -1,4 +1,5 @@
 #include "driver/i2c.h"
+#include "esp_task_wdt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -143,6 +144,10 @@ void clear_display(){
 }
 
 void display_write_char(char c, uint8_t col, uint8_t page){
+	/* reset watchdog manually */
+	esp_task_wdt_reset();
+	vTaskDelay(pdMS_TO_TICKS(1000));
+
 	/* check for out of bounds */
 	if (c < 0 || c > 127) {
 		return;
@@ -185,6 +190,7 @@ void display_write_char(char c, uint8_t col, uint8_t page){
 		 * { 0x7C, 0x7E, 0x13, 0x13, 0x7E, 0x7C, 0x00, 0x00 }
 		 *
 		 */
+	    vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }
 
@@ -206,6 +212,7 @@ void display_write_string(const char* str, uint8_t col, uint8_t page){
         str++;
     }
 }
+
 
 
 

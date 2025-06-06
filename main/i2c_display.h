@@ -10,6 +10,8 @@
 
 /* Define configuration parameters */
 #include <stdint.h>
+#include "esp_task_wdt.h"
+
 #define SDA_PIN 		GPIO_NUM_21
 #define SCL_PIN			GPIO_NUM_22
 #define I2C_FREQ 		1000000

@@ -9,7 +9,11 @@ void app_main() {
     display_init();
     clear_display();
 
-    display_write_string("this is some long text will it go to the next lineeeeeeeeeeeeeeeeeee", 0, 0);
+    //esp_task_wdt_init(&config);
+    esp_task_wdt_add(NULL);
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    display_write_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor", 0, 0);
 
     /* infinite loop to prevent watchdog reset */
     while(1) {
