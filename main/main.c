@@ -4,14 +4,16 @@
 #include "esp_log.h"
 #include "i2c_display.h"
 
-void app_main(){
-	i2c_master_init();
-	display_init();
+void app_main() {
+    i2c_master_init();
+    display_init();
+    clear_display();
 
-	while(1){
-		send_command(DISPLAY_ON);
-		vTaskDelay(pdMS_TO_TICKS(2000));
-		send_command(DISPLAY_OFF);
-		vTaskDelay(pdMS_TO_TICKS(2000));
-	}
+    display_write_string("this is some long text will it go to the next lineeeeeeeeeeeeeeeeeee", 0, 0);
+
+    /* infinite loop to prevent watchdog reset */
+    while(1) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
+

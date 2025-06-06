@@ -5,6 +5,8 @@
 #include "i2c_display.h"
 #include "font8x8_basic.h"
 
+static const char *TAG = "I2C_DISPLAY";
+
 void i2c_master_init(){
 	i2c_config_t config = {
 			.mode = I2C_MODE_MASTER,
@@ -46,18 +48,20 @@ void send_command(uint8_t cmd){
 
 void send_data(uint8_t data){
 	i2c_cmd_handle_t command = i2c_cmd_link_create();
-
 	i2c_master_start(command);
-	i2c_master_write_byte(command, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
 
+	i2c_master_write_byte(command, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
 	/* Control byte to indicate the next byte is data: 0x40 */
 	i2c_master_write_byte(command, 0x40, true);
 	i2c_master_write_byte(command, data, true);
 
 	i2c_master_stop(command);
+
 	i2c_master_cmd_begin(I2C_PORT, command, 10/portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(command);
 }
+
+
 
 void display_init(){
 	send_command(DISPLAY_OFF);
@@ -108,12 +112,34 @@ void display_init(){
 	send_command(0x40);
 
 	/* Resume display from RAM content - 0xA4 = display what's in GDDRAM */
-	send_command(0xA5);
+	send_command(0xA4);
 
 	/* 0xA6 = white on black (normal). 0xA7 = black on white (inverted). */
 	send_command(0xA6);
 
 	send_command(DISPLAY_ON);
+}
+
+void clear_display(){
+	for(uint8_t page = 0; page < 8; page++){
+		send_command(0xB0 + page);
+
+		/* Set lower column address = 0 */
+		send_command(0x00);
+		/* set upper column address = 0 */
+		send_command(0x10);
+
+		/* final column address: 0b 0000 0000
+		 * Remember the SSD1306 interprets the actual value of the byte as a command.
+		*/
+
+		for(uint8_t col = 0; col < 128; col++){
+			/* Turn off all 8 vertical pixels in this column */
+			send_data(0x00);
+			/* Yield every 16 bytes */
+			if (col % 16 == 0) vTaskDelay(1);
+		}
+	}
 }
 
 void display_write_char(char c, uint8_t col, uint8_t page){
@@ -126,7 +152,6 @@ void display_write_char(char c, uint8_t col, uint8_t page){
 	send_command(0xB0 + page);
 
 	/* Set column */
-
 	/*
 	 * This sets the lower nibble (bits 0–3) of the column address.
 	 * The SSD1306 requires the lower 4 bits to be set using command 0x00–0x0F.
@@ -147,13 +172,40 @@ void display_write_char(char c, uint8_t col, uint8_t page){
 	 *   0x10 + 0x02 = 0x12
 	 * → Sends command 0x12 to set upper nibble to 2
 	 *
-	 * Actual column = (upper << 4) | lower = (2 << 4) | 13 = 32 + 13 = 45 ✅
+	 * Actual column = (upper << 4) | lower = (2 << 4) | 13 = 32 + 13 = 45
 	 */
 	send_command(0x10 + ((col >> 4) & 0x0F));
 
-	/* Write the 8 bytes of font data */
-	for(int i = 0; i < 8; i++){
-		send_data(font8x8_basic_tr[(uint8_t)c][i]);
+	for (int i = 0; i < 8; i++) {
+	    uint8_t byte = font8x8_basic_tr[(uint8_t)c][i];
+	    ESP_LOGI("CHAR", "Byte %d: 0x%02X", i, byte);
+	    send_data(byte);
+	    /* This is A:
+		 *
+		 * { 0x7C, 0x7E, 0x13, 0x13, 0x7E, 0x7C, 0x00, 0x00 }
+		 *
+		 */
 	}
 }
+
+void display_write_string(const char* str, uint8_t col, uint8_t page){
+    uint8_t func_col = col;
+    uint8_t func_page = page;
+
+    while (*str) {
+        if (func_col + 8 > 128) {  // Avoid wrapping mid-character
+            func_col = 0;
+            func_page++;
+            if (func_page >= 8) break;
+        }
+
+        display_write_char(*str, func_col, func_page);
+        ESP_LOGI("I2C_DISPLAY", "char: %c at col: %u page: %u", *str, func_col, func_page);
+
+        func_col += 8;  // move to next char slot
+        str++;
+    }
+}
+
+
 
