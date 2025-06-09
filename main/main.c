@@ -15,7 +15,7 @@ void app_main() {
     vTaskDelay(pdMS_TO_TICKS(1000));
     display_write_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor", 0, 0);
 
-    /* infinite loop to prevent watchdog reset */
+    /* infinite loop to prevent watchdog reset - main task keeps running */
     while(1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
