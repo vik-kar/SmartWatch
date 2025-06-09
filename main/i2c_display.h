@@ -22,7 +22,7 @@
 #define DISPLAY_OFF		0xAE
 #define DISPLAY_ON		0xAF
 
-/* function prototypes */
+/* function prototypes - callable from main.c by inclusion of header file */
 
 void i2c_master_init();
 void send_command(uint8_t cmd);
