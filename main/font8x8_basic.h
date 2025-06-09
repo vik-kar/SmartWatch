@@ -1,10 +1,3 @@
-/*
- * font8x8_basic.h
- *
- *  Created on: 2017/05/03
- *      Author: yanbe
- */
-
 #ifndef MAIN_FONT8X8_BASIC_H_
 #define MAIN_FONT8X8_BASIC_H_
 
