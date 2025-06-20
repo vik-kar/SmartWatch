@@ -13,7 +13,7 @@ void app_main() {
     esp_task_wdt_add(NULL);
 
     vTaskDelay(pdMS_TO_TICKS(1000));
-    display_write_string("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor", 0, 0);
+    display_write_string("let's test this display again, just to be sure that it works. Here's some REALLY long text.", 0, 0);
 
     /* infinite loop to prevent watchdog reset - main task keeps running */
     while(1) {

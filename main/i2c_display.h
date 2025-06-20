@@ -15,7 +15,7 @@
 #define SDA_PIN 		GPIO_NUM_21
 #define SCL_PIN			GPIO_NUM_22
 #define I2C_FREQ 		1000000
-#define I2C_PORT		I2C_NUM_0
+#define I2C_PORT		I2C_NUM_0 /* which i2c module to use */
 
 #define DISPLAY_ADDR	0x3C
 #define DISPLAY_ONE_CMD	0x80
