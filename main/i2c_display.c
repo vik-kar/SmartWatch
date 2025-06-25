@@ -213,6 +213,10 @@ void display_write_string(const char* str, uint8_t col, uint8_t page){
     }
 }
 
+void display_burst_write_string(const char* str, uint8_t col, uint8_t page){
+
+}
+
 
 
 
