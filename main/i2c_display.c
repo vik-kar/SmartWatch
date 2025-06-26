@@ -54,7 +54,7 @@ void send_command_burst(const uint8_t *commands, size_t len){
 	i2c_master_write_byte(cmd, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
 
 	for(size_t i = 0; i < len; i++){
-		/* control byte: indicate that one command is coming */
+		/* control byte: indicate that one command is coming - in the original send_command, we send this as well */
 		i2c_master_write_byte(cmd, DISPLAY_ONE_CMD, true);
 
 		/* write the actual command */
@@ -65,19 +65,27 @@ void send_command_burst(const uint8_t *commands, size_t len){
 	i2c_cmd_link_delete(cmd);
 }
 
-void send_data(uint8_t data){
-	i2c_cmd_handle_t command = i2c_cmd_link_create();
-	i2c_master_start(command);
+void display_init_burst() {
+    const uint8_t init_sequence[] = {
+        DISPLAY_OFF,
+        0xD5, 0x80,
+        0xA8, 0x3F,
+        0xD3, 0x00,
+        0x40,
+        0x8D, 0x14,
+        0x20, 0x00,
+        0xA1,
+        0xC8,
+        0xDA, 0x12,
+        0x81, 0x7F,
+        0xD9, 0xF1,
+        0xDB, 0x40,
+        0xA4,
+        0xA6,
+        DISPLAY_ON
+    };
 
-	i2c_master_write_byte(command, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
-	/* Control byte to indicate the next byte is data: 0x40 */
-	i2c_master_write_byte(command, 0x40, true);
-	i2c_master_write_byte(command, data, true);
-
-	i2c_master_stop(command);
-
-	i2c_master_cmd_begin(I2C_PORT, command, 10/portTICK_PERIOD_MS);
-	i2c_cmd_link_delete(command);
+    send_command_burst(init_sequence, sizeof(init_sequence));
 }
 
 
