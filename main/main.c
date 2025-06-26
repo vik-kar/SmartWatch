@@ -6,14 +6,14 @@
 
 void app_main() {
     i2c_master_init();
-    display_init();
+    display_init_burst();
     clear_display();
 
     //esp_task_wdt_init(&config);
     //esp_task_wdt_add(NULL);
 
     vTaskDelay(pdMS_TO_TICKS(1000));
-    display_burst_write_string("A long time ago, in a galaxy far, far, away...", 0, 0);
+    display_burst_write_string("The unanimous Declaration of the thirteen united States of America", 0, 0);
 
     /* infinite loop to prevent watchdog reset - main task keeps running */
     while(1) {

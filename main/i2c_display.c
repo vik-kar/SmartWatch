@@ -147,6 +147,21 @@ void display_init(){
 	send_command(DISPLAY_ON);
 }
 
+void send_data(uint8_t data){
+	i2c_cmd_handle_t command = i2c_cmd_link_create();
+	i2c_master_start(command);
+
+	i2c_master_write_byte(command, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
+	/* Control byte to indicate the next byte is data: 0x40 */
+	i2c_master_write_byte(command, 0x40, true);
+	i2c_master_write_byte(command, data, true);
+
+	i2c_master_stop(command);
+
+	i2c_master_cmd_begin(I2C_PORT, command, 10/portTICK_PERIOD_MS);
+	i2c_cmd_link_delete(command);
+}
+
 void clear_display(){
 	for(uint8_t page = 0; page < 8; page++){
 		send_command(0xB0 + page);

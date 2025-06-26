@@ -26,7 +26,9 @@
 
 void i2c_master_init();
 void send_command(uint8_t cmd);
+void send_command_burst(const uint8_t *commands, size_t len);
 void display_init();
+void display_init_burst();
 void display_write_char(char c, uint8_t col, uint8_t page);
 void display_write_string(const char* str, uint8_t col, uint8_t page);
 void clear_display();
