@@ -213,9 +213,51 @@ void display_write_string(const char* str, uint8_t col, uint8_t page){
     }
 }
 
-void display_burst_write_string(const char* str, uint8_t col, uint8_t page){
+
+void display_burst_write_string(const char* string, uint8_t col, uint8_t page){
+	while(*string && page < 8){
+		/* Check for column overflow */
+		if(col + 8 > 128){
+			col = 0;
+			page++;
+			if(page >= 8) break;
+		}
+		/* Set page and column - same as display_write_char() */
+		send_command(0xB0 + page);
+		send_command(0x00 + (col & 0x0F));
+		send_command(0x10 + ((col >> 4) & 0x0F));
+
+		/* Prep persistent I2C command handle */
+		i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+
+		/* add start condition to transaction */
+		i2c_master_start(cmd);
+
+		/* Send 7-bit slave addr + 1 bit write mode */
+		i2c_master_write_byte(cmd, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
+
+		/* send control byte indicating the bytes following are all data */
+		i2c_master_write_byte(cmd, 0x40, true);
+
+		/* Push characters until we hit the end or fill a page */
+		while(*string && col + 8 <= 128){
+			uint8_t *character = font8x8_basic_tr[(uint8_t) *string];
+			i2c_master_write(cmd, character, 8, true);
+			col += 8;
+			string++;
+		}
+
+		/* Stop I2C */
+        i2c_master_stop(cmd);
+
+        /* begin i2c from the command handle, then delete the command link after it's done */
+        i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+        i2c_cmd_link_delete(cmd);
+
+	}
 
 }
+
 
 
 
