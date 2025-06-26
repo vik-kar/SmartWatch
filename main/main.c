@@ -10,13 +10,14 @@ void app_main() {
     clear_display();
 
     //esp_task_wdt_init(&config);
-    esp_task_wdt_add(NULL);
+    //esp_task_wdt_add(NULL);
 
     vTaskDelay(pdMS_TO_TICKS(1000));
-    display_write_string("let's test this display again, just to be sure that it works. Here's some REALLY long text.", 0, 0);
+    display_burst_write_string("A long time ago, in a galaxy far, far, away...", 0, 0);
 
     /* infinite loop to prevent watchdog reset - main task keeps running */
     while(1) {
+    	printf("Delaying...");
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

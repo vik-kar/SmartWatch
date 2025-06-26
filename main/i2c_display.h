@@ -30,5 +30,6 @@ void display_init();
 void display_write_char(char c, uint8_t col, uint8_t page);
 void display_write_string(const char* str, uint8_t col, uint8_t page);
 void clear_display();
+void display_burst_write_string(const char* string, uint8_t col, uint8_t page);
 
 #endif /* MAIN_I2C_DISPLAY_H_ */
