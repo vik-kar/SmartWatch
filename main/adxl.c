@@ -7,5 +7,6 @@
 #include "font8x8_basic.h"
 
 void adxl_init(){
-	/* Set
+	/* Set POWER_CTL_R to enable measurement */
+
 }

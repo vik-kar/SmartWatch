@@ -57,7 +57,9 @@ void send_command_burst(const uint8_t *commands, size_t len){
 		/* control byte: indicate that one command is coming - in the original send_command, we send this as well */
 		i2c_master_write_byte(cmd, DISPLAY_ONE_CMD, true);
 
-		/* write the actual command */
+		/* write the actual command
+		 * remember *(commands + i), that's how we can treat the uint8_t pointer as an "array"
+		*/
 		i2c_master_write_byte(cmd, commands[i], true);
 	}
 	i2c_master_stop(cmd);
@@ -308,9 +310,44 @@ void display_burst_write_string(const char* string, uint8_t col, uint8_t page){
 
 }
 
-esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){
+esp_err_t i2c_read_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){
+	/* parameters check */
+	if (len == 0 || data == NULL) {
+	        return ESP_ERR_INVALID_ARG;
+	}
+
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+
+	/* Write address of the register */
+	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true); /* send first byte: address + r/w bit */
+	i2c_master_write_byte(cmd, reg_addr, true);
+
+	/* Repeated start - keep control of the bus. Address bytes are not valid unless preceded by a start or repeated start */
+	i2c_master_start(cmd);
+	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_READ, true);
+
+	/* verify number of bytes requested is at least 1 */
+	if(len > 1){
+		i2c_master_read(cmd, data, len - 1, I2C_MASTER_ACK);
+	}
+	i2c_master_read_byte(cmd, data + len - 1, I2C_MASTER_NACK);
+
+	i2c_master_stop(cmd);
+
+	esp_err_t err = i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+	i2c_cmd_link_delete(cmd);
+	return err;
+
 }
+
+//esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){
+//	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+//	i2c_master_start(cmd);
+//	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true);
+//	i2c_master_write_byte(cmd, reg_addr, true);
+//	i2c_master_write(cmd, data)
+//}
 
 
 
