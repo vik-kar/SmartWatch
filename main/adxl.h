@@ -1,0 +1,16 @@
+#ifndef ADXL_H_
+#define ADXL_H_
+
+#include "i2c_display.h"
+#include <stdint.h>
+
+#define DEVID_R			0x00
+#define DEVICE_ADDR		0x53
+#define DATA_FORMAT_R	0x31
+#define POWER_CTL_R		0x2D
+#define DATA_START_ADDR	0x32
+
+void adxl_init(void);
+void adxl_read_values (uint8_t reg);
+
+#endif /* ADXL345_H_ */
