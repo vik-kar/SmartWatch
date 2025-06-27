@@ -81,7 +81,7 @@ void display_init_burst() {
         0xD9, 0xF1,
         0xDB, 0x40,
         0xA4,
-        0xA6,
+        0xA7,
         DISPLAY_ON
     };
 
@@ -224,7 +224,7 @@ void display_write_char(char c, uint8_t col, uint8_t page){
 
 	for (int i = 0; i < 8; i++) {
 	    uint8_t byte = font8x8_basic_tr[(uint8_t)c][i];
-	    ESP_LOGI("CHAR", "Byte %d: 0x%02X", i, byte);
+	    ESP_LOGI("CHAR", "Byte %d: 0x%02X", i, ~byte);
 	    send_data(byte);
 	    /* This is A:
 		 *
@@ -283,6 +283,15 @@ void display_burst_write_string(const char* string, uint8_t col, uint8_t page){
 		/* Push characters until we hit the end or fill a page */
 		while(*string && col + 8 <= 128){
 			uint8_t *character = font8x8_basic_tr[(uint8_t) *string];
+
+			/* temporary invert buffer */
+			uint8_t inverted[8];
+			for(int i = 0; i < 8; i++){
+				inverted[i] = ~character[i];
+				printf("Char: %c | Byte[%d]: 0x%02X -> Inverted: 0x%02X\n",
+				               *string, i, character[i], inverted[i]);
+			}
+
 			i2c_master_write(cmd, character, 8, true);
 			col += 8;
 			string++;
