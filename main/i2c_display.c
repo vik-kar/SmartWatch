@@ -286,14 +286,6 @@ void display_burst_write_string(const char* string, uint8_t col, uint8_t page){
 		while(*string && col + 8 <= 128){
 			uint8_t *character = font8x8_basic_tr[(uint8_t) *string];
 
-			/* temporary invert buffer */
-			uint8_t inverted[8];
-			for(int i = 0; i < 8; i++){
-				inverted[i] = ~character[i];
-				printf("Char: %c | Byte[%d]: 0x%02X -> Inverted: 0x%02X\n",
-				               *string, i, character[i], inverted[i]);
-			}
-
 			i2c_master_write(cmd, character, 8, true);
 			col += 8;
 			string++;
@@ -338,7 +330,6 @@ esp_err_t i2c_read_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, s
 	esp_err_t err = i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 	return err;
-
 }
 
 //esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){

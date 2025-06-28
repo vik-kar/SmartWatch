@@ -8,5 +8,5 @@
 
 void adxl_init(){
 	/* Set POWER_CTL_R to enable measurement */
-
+	//i2c_write_register(DEVICE_ADDR, POWER_CTL_R, &data, 1);
 }
