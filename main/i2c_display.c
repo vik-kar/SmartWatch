@@ -332,6 +332,22 @@ esp_err_t i2c_read_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, s
 	return err;
 }
 
+esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t value){
+	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+	i2c_master_start(cmd);
+
+	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true); /* send first byte: address + r/w bit */
+	i2c_master_write_byte(cmd, reg_addr, true);
+
+	/* Write the value to the specified register */
+	i2c_master_write_byte(cmd, value, true);
+
+	esp_err_t err = i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+	i2c_cmd_link_delete(cmd);
+	return err;
+
+}
+
 //esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){
 //	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 //	i2c_master_start(cmd);
