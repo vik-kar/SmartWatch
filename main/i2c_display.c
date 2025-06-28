@@ -348,13 +348,7 @@ esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t value){
 
 }
 
-//esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len){
-//	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-//	i2c_master_start(cmd);
-//	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true);
-//	i2c_master_write_byte(cmd, reg_addr, true);
-//	i2c_master_write(cmd, data)
-//}
+
 
 
 

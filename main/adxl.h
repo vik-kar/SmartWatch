@@ -10,7 +10,10 @@
 #define POWER_CTL_R		0x2D
 #define DATA_START_ADDR	0x32
 
-void adxl_init(void);
+#define MEASURE_EN			(1U << 3)
+#define DATA_FORMAT_CONF	((1U << 3) | 1U << 0))
+
+esp_err_t adxl_init();
 void adxl_read_values (uint8_t reg);
 
 #endif /* ADXL345_H_ */
