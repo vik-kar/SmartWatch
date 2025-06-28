@@ -6,14 +6,19 @@
 #include "adxl.h"
 
 void app_main() {
+	/* initialize ESP32 in master mode */
     i2c_master_init();
+
+    /* Initialize the display, then clear it */
     display_init_burst();
     clear_display();
 
     esp_err_t read_result;
     uint8_t dev_id_val;
     read_result = i2c_read_register(DEVICE_ADDR, DEVID_R, &dev_id_val , 1);
+
     vTaskDelay(pdMS_TO_TICKS(1000));
+
     char buffer[4];
     sprintf(buffer, "%02X", dev_id_val);
     display_burst_write_string(buffer, 0, 2);
