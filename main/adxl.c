@@ -20,3 +20,18 @@ esp_err_t adxl_init(){
 
 	return ESP_OK;
 }
+
+esp_err_t adxl_read_data(int16_t *x, int16_t *y, int16_t *z){
+	/* each axis (x, y, z) has two bytes  - X0, X1, Y0, etc */
+	uint8_t data[6];
+
+	esp_err_t err = i2c_read_register(DEVICE_ADDR, DATA_START_ADDR, data, 6);
+	if(err != ESP_OK) return err;
+
+	/* combine the x, y, and z values (two 8-bit values) to get one 16 bit value. do this by shifting - we are combining LSB and MSB */
+	*x = (int16_t)((data[1] << 8) | data[0]);
+	*y = (int16_t)((data[3] << 8) | data[2]);
+	*z = (int16_t)((data[5] << 8) | data[4]);
+
+	return ESP_OK;
+}

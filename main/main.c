@@ -4,47 +4,76 @@
 #include "esp_log.h"
 #include "i2c_display.h"
 #include "adxl.h"
+#include "freertos/semphr.h"
+
+/* Synchronization primitives */
+SemaphoreHandle_t i2cbus;
+TaskHandle_t read_adxl;
+
+/* Task/function headers */
+void accelerometer_read (void *pvParameters);
+void write_to_display(const char* string, uint8_t col, uint8_t page);
 
 void app_main() {
 	/* initialize ESP32 in master mode */
     i2c_master_init();
-
     /* Initialize the display, then clear it */
     display_init_burst();
     clear_display();
 
-//    esp_err_t read_result;
-//    uint8_t dev_id_val;
-//    read_result = i2c_read_register(DEVICE_ADDR, DEVID_R, &dev_id_val , 1);
+    /* Initialize ADXL */
+    adxl_init();
 
-    esp_err_t err = adxl_init();
-    if(err == ESP_OK){
-		esp_err_t read_result;
-		uint8_t dev_id_val;
-		read_result = i2c_read_register(DEVICE_ADDR, DEVID_R, &dev_id_val , 1);
+    /* create semaphore */
+    i2cbus = xSemaphoreCreateBinary();
 
-		char buffer[4];
-		sprintf(buffer, "%02X", dev_id_val);
-		display_burst_write_string(buffer, 0, 2);
-		display_burst_write_string("hello", 0, 5);
-    }
+    /* Create task to read ADXL data */
+    xTaskCreate(accelerometer_read,
+    			"accelerometer_read",
+				2048,
+				NULL,
+				1,
+				&read_adxl);
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    /* Give semaphore to make it available */
+    xSemaphoreGive(i2cbus);
 
-//    char buffer[4];
-//    sprintf(buffer, "%02X", dev_id_val);
-//    display_burst_write_string(buffer, 0, 2);
+    while(1){
 
-
-    //esp_task_wdt_init(&config);
-    //esp_task_wdt_add(NULL);
-
-    //display_burst_write_string("A long time ago, in a galaxy far, far away...", 0, 0);
-    //display_write_char('A', 0, 0);
-    /* infinite loop to prevent watchdog reset - main task keeps running */
-    while(1) {
-    	printf("Delaying...");
-        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+void accelerometer_read(void *pvParameters){
+	/* declare buffer and variables */
+	int16_t x, y, z;
+	char buffer[32];
+	while(1){
+		/* obtain the semaphore. If so, proceed with reading */
+		if(xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))){
+			if(adxl_read_data(&x, &y, &z) == ESP_OK){
+				/* Give up semaphore, now that we're done reading */
+				xSemaphoreGive(i2cbus);
+
+				sprintf(buffer, "X:%f", (x * 0.0078));
+				write_to_display(buffer, 0, 3);
+
+				sprintf(buffer, "Y:%f", (y * 0.0078));
+				write_to_display(buffer, 0, 4);
+
+				sprintf(buffer, "Z:%f", (z * 0.0078));
+				write_to_display(buffer, 0, 5);
+			}
+		}
+		vTaskDelay(pdMS_TO_TICKS(200));
+	}
+}
+
+void write_to_display(const char* string, uint8_t col, uint8_t page){
+	if(xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))){
+		display_burst_write_string(string, col, page);
+	}
+	xSemaphoreGive(i2cbus);
+}
+
+
 

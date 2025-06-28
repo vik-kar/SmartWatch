@@ -16,5 +16,6 @@
 
 esp_err_t adxl_init();
 void adxl_read_values (uint8_t reg);
+esp_err_t adxl_read_data(int16_t *x, int16_t *y, int16_t *z);
 
 #endif /* ADXL345_H_ */
