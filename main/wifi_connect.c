@@ -132,8 +132,8 @@ esp_err_t wifi_connect(char* wifi_ssid, char* wifi_pwd){
     */
     EventBits_t bits = xEventGroupWaitBits(wifi_event_group,
     									   WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-										   pdFalse,
-										   pdFalse,
+										   pdFALSE,
+										   pdFALSE,
 										   portMAX_DELAY);
 
     /* Check which bit in the event group was actually set, and depending on that, log a specific statement */
@@ -145,6 +145,8 @@ esp_err_t wifi_connect(char* wifi_ssid, char* wifi_pwd){
     	ESP_LOGI(TAG, "Failed to connect to WiFi network: %s", wifi_config.sta.ssid);
     	return ESP_FAIL;
     }
+
+    /* Fallback log + return statement - something went wrong */
 
     ESP_LOGI(TAG, "ERROR: Unexpected WiFi error");
     return ESP_FAIL;
