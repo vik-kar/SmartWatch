@@ -193,6 +193,7 @@ esp_err_t wifi_deinit(void){
 	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
 														  ESP_EVENT_ANY_ID,
 														  wifi_event_handler));
+	return ESP_OK;
 }
 
 static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
