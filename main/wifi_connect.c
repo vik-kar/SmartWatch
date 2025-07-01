@@ -102,11 +102,52 @@ esp_err_t wifi_connect(char* wifi_ssid, char* wifi_pwd){
 	/* Copy SSID and password into the config struct
 
 	 * wifi_config.sta.ssid: uint8_t ssid[32]
-	 * wifi_ssid is a char * : pointer to a null terminated string
+	 * wifi_ssid is a char* : pointer to a null terminated string
 	 * strncpy needs dest and src to be char *, but destination is currently uint8_t[]
 	 * The cast works because a char is 1 byte, so is uint8_t. Just telling compiler how to interpret the memory.
 	*/
-	strncpy((char *) wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid))
+	strncpy((char *) wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid));
+	strncpy((char *) wifi_config.sta.password, wifi_pwd, sizeof(wifi_config.sta.password));
+
+	/* Disable power saving: gives max reliability */
+	ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+
+	/* Store creds in RAM, not flash - speeds up process and avoids unnecessary flash writes */
+	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+
+	/* Set wifi mode to station - can connect to the access point whose credentials are provided */
+	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+
+	/* Apply the configuration */
+	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+
+	/* Start the wifi driver and begin the connection process in the background */
+    ESP_LOGI(TAG, "Connecting to Wi-Fi network: %s", wifi_config.sta.ssid);
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    /* Wait for connection result and set the appropriate bit in the event group
+
+       This line blocks until either the ESP connects or fails, indicated by (WIFI_CONNECTED_BIT | WIFI_FAIL_BIT) - if a 1 is set for either value, we resume task and check what bit is set.
+
+    */
+    EventBits_t bits = xEventGroupWaitBits(wifi_event_group,
+    									   WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+										   pdFalse,
+										   pdFalse,
+										   portMAX_DELAY);
+
+    /* Check which bit in the event group was actually set, and depending on that, log a specific statement */
+    if(bits & WIFI_CONNECTED_BIT){
+    	ESP_LOGI(TAG, "Connected to WiFi network: %s", wifi_config.sta.ssid);
+    	return ESP_OK;
+    }
+    else if(bits & WIFI_FAIL_BIT){
+    	ESP_LOGI(TAG, "Failed to connect to WiFi network: %s", wifi_config.sta.ssid);
+    	return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "ERROR: Unexpected WiFi error");
+    return ESP_FAIL;
 }
 
 
