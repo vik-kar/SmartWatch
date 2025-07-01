@@ -152,6 +152,47 @@ esp_err_t wifi_connect(char* wifi_ssid, char* wifi_pwd){
     return ESP_FAIL;
 }
 
+esp_err_t wifi_disconnect(void){
+	if(wifi_event_group){
+		vEventGroupDelete(wifi_event_group);
+	}
+	return esp_wifi_disconnect();
+}
+
+esp_err_t wifi_deinit(void){
+
+	/* Stop the WiFi driver - disconnects from AP, turns off WiFi radio */
+	esp_err_t ret = esp_wifi_stop();
+
+	/* Handling the case where WiFi was not initialized to begin with */
+	if(ret == ESP_ERR_WIFI_NOT_INIT){
+		ESP_LOGI(TAG, "WiFi stack was not initialized");
+		return ret;
+	}
+
+	/* Full cleanup begins */
+
+	/* Free up internal WiFi driver resources (memory buffers, tasks) */
+	ESP_ERROR_CHECK(esp_wifi_deinit());
+
+	/* Remove any default event handlers and the internal WiFi driver bound to this network interface */
+	ESP_ERROR_CHECK(esp_wifi_clear_default_wifi_driver_and_handlers(wifi_netif));
+
+	/* Free underlying TCP/IP structures */
+	esp_netif_destroy(wifi_netif);
+
+	/* Remove event handlers */
+	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT,
+														  ESP_EVENT_ANY_ID,
+														  ip_event_handler));
+
+	ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
+														  ESP_EVENT_ANY_ID,
+														  wifi_event_handler));
+}
+
+
+
 
 
 
