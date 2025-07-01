@@ -87,8 +87,28 @@ esp_err_t wifi_init(void){
 														&ip_event_cb,
 														NULL,
 														&ip_event_handler));
-
 }
+
+/* Connect ESP32 to a WiFi network in station mode using SSID and Password */
+esp_err_t wifi_connect(char* wifi_ssid, char* wifi_pwd){
+
+	/* Initialize a wifi configuration struct for station mode */
+	wifi_config_t wifi_config = {
+			.sta = {
+					.threshold.authmode = WIFI_AUTHMODE,
+			},
+	};
+
+	/* Copy SSID and password into the config struct
+
+	 * wifi_config.sta.ssid: uint8_t ssid[32]
+	 * wifi_ssid is a char * : pointer to a null terminated string
+	 * strncpy needs dest and src to be char *, but destination is currently uint8_t[]
+	 * The cast works because a char is 1 byte, so is uint8_t. Just telling compiler how to interpret the memory.
+	*/
+	strncpy((char *) wifi_config.sta.ssid, wifi_ssid, sizeof(wifi_config.sta.ssid))
+}
+
 
 
 
