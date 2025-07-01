@@ -4,6 +4,7 @@
 
 #include "wifi_connect.h"
 #include "freertos/event_groups.h"
+#include "main.h"
 
 #define TAG "WiFi"
 
@@ -15,8 +16,8 @@
 #define WIFI_FAIL_BIT      	BIT1	// connection failure
 
 /* Retry configuration */
-static const int WIFI_RETRY_ATTEMPT = 3;
-static int 		 wifi_retry_count	= 0;
+//static const int WIFI_RETRY_ATTEMPT = 3;
+//static int 		 wifi_retry_count	= 0;
 
 /* WiFi related handles
 
@@ -30,10 +31,6 @@ static esp_event_handler_instance_t wifi_event_handler;
 
 /* Event group handle */
 static EventGroupHandle_t wifi_event_group = NULL;
-
-/* Callback declarations */
-static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
-static void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
 
 esp_err_t wifi_init(void){
 	/* Declare a return value for ESP-IDF function calls */
@@ -91,6 +88,7 @@ esp_err_t wifi_init(void){
 														&ip_event_cb,
 														NULL,
 														&ip_event_handler));
+	return ESP_OK;
 }
 
 /* Connect ESP32 to a WiFi network in station mode using SSID and Password */
@@ -163,7 +161,7 @@ esp_err_t wifi_disconnect(void){
 	return esp_wifi_disconnect();
 }
 
-esp_err_t wifi_deinit(void){
+esp_err_t wifi_deinitialize(void){
 
 	/* Stop the WiFi driver - disconnects from AP, turns off WiFi radio */
 	esp_err_t ret = esp_wifi_stop();
@@ -196,14 +194,27 @@ esp_err_t wifi_deinit(void){
 	return ESP_OK;
 }
 
-static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-
-}
-
-
-static void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-
-}
+//static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+//	/* Log what event we just witnessed */
+//	ESP_LOGI(TAG, "WiFi Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+//	draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
+//}
+//
+//
+//static void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+//
+//	/* Log what event we just witnessed */
+//	ESP_LOGI(TAG, "IP Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+//
+////	/* Switch on the event */
+////	switch(event_id){
+////
+////	case(IP_EVENT_STA_GOT_IP):
+////
+////
+////	}
+//
+//}
 
 
 

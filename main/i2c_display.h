@@ -37,5 +37,5 @@ void display_burst_write_string(const char* string, uint8_t col, uint8_t page);
 esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t value);
 
 esp_err_t i2c_read_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, size_t len);
-
+void draw_wifi_icon(uint8_t col, uint8_t page);
 #endif /* MAIN_I2C_DISPLAY_H_ */

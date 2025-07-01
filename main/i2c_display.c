@@ -348,6 +348,32 @@ esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t value){
 
 }
 
+void draw_wifi_icon(uint8_t col, uint8_t page) {
+    const uint8_t wifi_bitmap[2][2] = {
+        {0b00011000, 0b00100100},  // Page 0: columns 0 and 1
+        {0b01000010, 0b10000001}   // Page 1: columns 0 and 1
+    };
+
+    for (int p = 0; p < 2; p++) {
+        send_command(0xB0 + page + p);
+        send_command(0x00 + ((col + 0) & 0x0F));
+        send_command(0x10 + (((col + 0) >> 4) & 0x0F));
+
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
+        i2c_master_write_byte(cmd, 0x40, true); // data
+
+        i2c_master_write_byte(cmd, wifi_bitmap[p][0], true);
+        i2c_master_write_byte(cmd, wifi_bitmap[p][1], true);
+
+        i2c_master_stop(cmd);
+        i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+        i2c_cmd_link_delete(cmd);
+    }
+}
+
+
 
 
 

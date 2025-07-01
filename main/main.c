@@ -1,10 +1,14 @@
 #include "driver/i2c.h"
+#include "esp_event_base.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "i2c_display.h"
 #include "adxl.h"
 #include "freertos/semphr.h"
+#include "wifi_connect.h"
+
+#define TAG "main.c"
 
 /* Synchronization primitives */
 SemaphoreHandle_t i2cbus;
@@ -13,6 +17,9 @@ TaskHandle_t read_adxl;
 /* Task/function headers */
 void accelerometer_read (void *pvParameters);
 void write_to_display(const char* string, uint8_t col, uint8_t page);
+
+char wifi_ssid[] = "ghar-mesh";
+char wifi_password[] = "Welcome9671$";
 
 void app_main() {
 	/* initialize ESP32 in master mode */
@@ -23,6 +30,10 @@ void app_main() {
 
     /* Initialize ADXL */
     adxl_init();
+
+    /* Initialize and start WiFi */
+    esp_err_t ret = wifi_init();
+    ret = wifi_connect(wifi_ssid, wifi_password);
 
     /* create semaphore */
     i2cbus = xSemaphoreCreateBinary();
@@ -75,5 +86,39 @@ void write_to_display(const char* string, uint8_t col, uint8_t page){
 	xSemaphoreGive(i2cbus);
 }
 
+void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+	/* Log what event we just witnessed */
+	ESP_LOGI(TAG, "WiFi Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+
+	/* Enter a switch to handle the event */
+	switch(event_id){
+		case WIFI_EVENT_STA_START:
+			ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
+			break;
+
+		case WIFI_EVENT_STA_CONNECTED:
+			if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
+				ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
+				draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
+				xSemaphoreGive(i2cbus);
+			}
+			break;
+
+		case WIFI_EVENT_STA_DISCONNECTED:
+			ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED");
+			break;
+
+		default:
+			ESP_LOGI(TAG, "Unhandled WiFi Event ID: %" PRId32, event_id);
+			break;
+	}
+
+}
+
+void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+	/* Log what event we just witnessed */
+	ESP_LOGI(TAG, "IP Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+
+}
 
 
