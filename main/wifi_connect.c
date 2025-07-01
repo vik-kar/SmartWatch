@@ -31,6 +31,10 @@ static esp_event_handler_instance_t wifi_event_handler;
 /* Event group handle */
 static EventGroupHandle_t wifi_event_group = NULL;
 
+/* Callback declarations */
+static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
+static void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data);
+
 esp_err_t wifi_init(void){
 	/* Declare a return value for ESP-IDF function calls */
 	esp_err_t ret;
@@ -191,7 +195,14 @@ esp_err_t wifi_deinit(void){
 														  wifi_event_handler));
 }
 
+static void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
 
+}
+
+
+static void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+
+}
 
 
 
