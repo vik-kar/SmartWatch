@@ -7,6 +7,7 @@
 #include "adxl.h"
 #include "freertos/semphr.h"
 #include "wifi_connect.h"
+#include "wifi_app.h"
 
 #define TAG "main.c"
 
@@ -18,8 +19,8 @@ TaskHandle_t read_adxl;
 void accelerometer_read (void *pvParameters);
 void write_to_display(const char* string, uint8_t col, uint8_t page);
 
-char wifi_ssid[] = "ghar-mesh";
-char wifi_password[] = "Welcome9671$";
+char wifi_ssid[] = "Vikram's iphone";
+char wifi_password[] = "password";
 
 void app_main() {
 	/* initialize ESP32 in master mode */
@@ -32,8 +33,11 @@ void app_main() {
     adxl_init();
 
     /* Initialize and start WiFi */
-    esp_err_t ret = wifi_init();
-    ret = wifi_connect(wifi_ssid, wifi_password);
+    wifi_app_start();
+
+//    if(ret != ESP_OK){
+//    	ESP_LOGE(TAG, "WiFi failed, but letting app_main exit to avoid WDT");
+//    }
 
     /* create semaphore */
     i2cbus = xSemaphoreCreateBinary();
@@ -50,7 +54,7 @@ void app_main() {
     xSemaphoreGive(i2cbus);
 
     while(1){
-
+    	vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -94,9 +98,12 @@ void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, voi
 	switch(event_id){
 		case WIFI_EVENT_STA_START:
 			ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
+			ESP_ERROR_CHECK(esp_wifi_connect());
 			break;
 
 		case WIFI_EVENT_STA_CONNECTED:
+			xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
+			ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED = %d", WIFI_EVENT_STA_CONNECTED);
 			if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
 				ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
 				draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
@@ -105,8 +112,14 @@ void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, voi
 			break;
 
 		case WIFI_EVENT_STA_DISCONNECTED:
-			ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED");
-			break;
+		    {
+		        wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*) event_data;
+		        ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED, reason: %d", disconnected->reason);
+
+		        /* Retry */
+		        //ESP_ERROR_CHECK(esp_wifi_connect());
+		    }
+		    break;
 
 		default:
 			ESP_LOGI(TAG, "Unhandled WiFi Event ID: %" PRId32, event_id);
