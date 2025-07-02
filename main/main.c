@@ -7,7 +7,6 @@
 #include "adxl.h"
 #include "freertos/semphr.h"
 #include "wifi_connect.h"
-#include "wifi_app.h"
 
 #define TAG "main.c"
 
@@ -33,7 +32,7 @@ void app_main() {
     adxl_init();
 
     /* Initialize and start WiFi */
-    wifi_app_start();
+    wifi_connection_start();
 
 //    if(ret != ESP_OK){
 //    	ESP_LOGE(TAG, "WiFi failed, but letting app_main exit to avoid WDT");
@@ -90,48 +89,56 @@ void write_to_display(const char* string, uint8_t col, uint8_t page){
 	xSemaphoreGive(i2cbus);
 }
 
-void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-	/* Log what event we just witnessed */
-	ESP_LOGI(TAG, "WiFi Event Callback: base=%s, id=%" PRId32, event_base, event_id);
-
-	/* Enter a switch to handle the event */
-	switch(event_id){
-		case WIFI_EVENT_STA_START:
-			ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
-			ESP_ERROR_CHECK(esp_wifi_connect());
-			break;
-
-		case WIFI_EVENT_STA_CONNECTED:
-			xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
-			ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED = %d", WIFI_EVENT_STA_CONNECTED);
-			if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
-				ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
-				draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
-				xSemaphoreGive(i2cbus);
-			}
-			break;
-
-		case WIFI_EVENT_STA_DISCONNECTED:
-		    {
-		        wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*) event_data;
-		        ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED, reason: %d", disconnected->reason);
-
-		        /* Retry */
-		        //ESP_ERROR_CHECK(esp_wifi_connect());
-		    }
-		    break;
-
-		default:
-			ESP_LOGI(TAG, "Unhandled WiFi Event ID: %" PRId32, event_id);
-			break;
+void draw_wifi(void){
+	if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
+		ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
+		display_wifi_symbol();
+		xSemaphoreGive(i2cbus);
 	}
-
 }
 
-void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-	/* Log what event we just witnessed */
-	ESP_LOGI(TAG, "IP Event Callback: base=%s, id=%" PRId32, event_base, event_id);
-
-}
+//void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+//	/* Log what event we just witnessed */
+//	ESP_LOGI(TAG, "WiFi Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+//
+//	/* Enter a switch to handle the event */
+//	switch(event_id){
+//		case WIFI_EVENT_STA_START:
+//			ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
+//			ESP_ERROR_CHECK(esp_wifi_connect());
+//			break;
+//
+//		case WIFI_EVENT_STA_CONNECTED:
+//			xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
+//			ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED = %d", WIFI_EVENT_STA_CONNECTED);
+//			if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
+//				ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
+//				draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
+//				xSemaphoreGive(i2cbus);
+//			}
+//			break;
+//
+//		case WIFI_EVENT_STA_DISCONNECTED:
+//		    {
+//		        wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*) event_data;
+//		        ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED, reason: %d", disconnected->reason);
+//
+//		        /* Retry */
+//		        //ESP_ERROR_CHECK(esp_wifi_connect());
+//		    }
+//		    break;
+//
+//		default:
+//			ESP_LOGI(TAG, "Unhandled WiFi Event ID: %" PRId32, event_id);
+//			break;
+//	}
+//
+//}
+//
+//void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+//	/* Log what event we just witnessed */
+//	ESP_LOGI(TAG, "IP Event Callback: base=%s, id=%" PRId32, event_base, event_id);
+//
+//}
 
 

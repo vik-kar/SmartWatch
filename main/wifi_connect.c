@@ -1,9 +1,9 @@
-#include "wifi_app.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "nvs_flash.h"
+#include "main.h"
 #include <string.h>
 
 /* SSID and Password for connection */
@@ -68,5 +68,26 @@ void wifi_connection_start(void){
 }
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+	switch(event_id){
+
+	case WIFI_EVENT_STA_START:
+		ESP_ERROR_CHECK(esp_wifi_connect());
+		break;
+
+	case WIFI_EVENT_STA_CONNECTED:
+		ESP_LOGI(TAG, "Connected to WiFi");
+		draw_wifi();
+		break;
+
+	default:
+		ESP_LOGI(TAG, "Unhandled IP Event ID: %" PRId32, event_id);
+		break;
+
+	}
+}
+
+static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+
 
 }
+

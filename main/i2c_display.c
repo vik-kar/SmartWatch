@@ -349,6 +349,7 @@ esp_err_t i2c_write_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t value){
 }
 
 void draw_wifi_icon(uint8_t col, uint8_t page) {
+	ESP_LOGI(TAG, "Drawing Icon at col: %u, page: %u", col, page);
     const uint8_t wifi_bitmap[2][2] = {
         {0b00011000, 0b00100100},  // Page 0: columns 0 and 1
         {0b01000010, 0b10000001}   // Page 1: columns 0 and 1
@@ -372,6 +373,94 @@ void draw_wifi_icon(uint8_t col, uint8_t page) {
         i2c_cmd_link_delete(cmd);
     }
 }
+
+void display_wifi_symbol() {
+    // WiFi symbol will be drawn in yellow bar area (spans pages 0 and 1)
+    // Starting at column 120 (128-8) to leave 8 pixels from right edge
+    uint8_t start_col = 120;
+
+    // Your custom bitmap: 16 rows by 8 columns
+    // Converting to SSD1306 format: 8 bytes for page 0, 8 bytes for page 1
+
+    // Top 8 rows (page 0) - extracting bits 8-15 from each column
+//    const uint8_t wifi_page0[] = {
+//        0x71,  // Column 0: 01110001
+//        0xE3,  // Column 1: 11100011
+//        0xE6,  // Column 2: 11100110
+//        0xE6,  // Column 3: 11100110
+//        0xE6,  // Column 4: 11100110
+//        0xE6,  // Column 5: 11100110
+//        0xE3,  // Column 6: 11100011
+//        0x71   // Column 7: 01110001
+//    };
+//
+//    // Bottom 8 rows (page 1) - extracting bits 0-7 from each column
+//    const uint8_t wifi_page1[] = {
+//        0xC0,  // Column 0: 11000000
+//        0x80,  // Column 1: 10000000
+//        0x06,  // Column 2: 00000110
+//        0x0F,  // Column 3: 00001111
+//        0x0F,  // Column 4: 00001111
+//        0x06,  // Column 5: 00000110
+//        0x80,  // Column 6: 10000000
+//        0xC0   // Column 7: 11000000
+//    };
+
+    const uint8_t wifi_page0[] = {
+        0x1E,  // Column 0: 00011110
+		0x0E,  // Column 1: 00001110
+		0x07,  // Column 2: 00000111
+		0x07,  // Column 3: 00000111
+		0x07,  // Column 4: 00000111
+		0x07,  // Column 5: 00000111
+		0x0E,  // Column 6: 00001110
+		0x1E   // Column 7: 00011110
+    };
+
+    const uint8_t wifi_page1[] = {
+        0x1E,  // Column 0: 00011110
+		0x0E,  // Column 1: 00001110
+		0x87,  // Column 2: 10000111
+		0xC7,  // Column 3: 11000111
+		0xC7,  // Column 4: 11000111
+		0x87,  // Column 5: 10000111
+		0x0E,  // Column 6: 00001110
+		0x1E   // Column 7: 00011110
+    };
+
+    // Draw page 0 (top half)
+    send_command(0xB0 + 0);  // Set page 0
+    send_command(0x00 + (start_col & 0x0F));  // Set lower column nibble
+    send_command(0x10 + ((start_col >> 4) & 0x0F));  // Set upper column nibble
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, 0x40, true);
+    i2c_master_write(cmd, wifi_page0, sizeof(wifi_page0), true);
+    i2c_master_stop(cmd);
+    i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+
+    // Draw page 1 (bottom half)
+    send_command(0xB0 + 1);  // Set page 1
+    send_command(0x00 + (start_col & 0x0F));  // Set lower column nibble
+    send_command(0x10 + ((start_col >> 4) & 0x0F));  // Set upper column nibble
+
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (DISPLAY_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, 0x40, true);
+    i2c_master_write(cmd, wifi_page1, sizeof(wifi_page1), true);
+    i2c_master_stop(cmd);
+    i2c_master_cmd_begin(I2C_PORT, cmd, 100 / portTICK_PERIOD_MS);
+    i2c_cmd_link_delete(cmd);
+
+    ESP_LOGI(TAG, "Custom WiFi symbol displayed at column %d, pages 0-1", start_col);
+}
+
+
+
 
 
 
