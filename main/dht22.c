@@ -29,3 +29,20 @@ void dht22_start_signal(){
 	gpio_set_level(DHT_gpio, 1);
 	microsec_delay(30);
 }
+
+/* wait_level function waits for the DHT_gpio to reach a logic level of 1 or 0.
+ * If this expected level is not reached within a certain number of us, it returns false (timeout)
+ */
+static bool dht22_wait_level(int level, uint32_t timeout_us){
+	/* Get current time */
+	uint32_t start_time = esp_timer_get_time();
+
+	/* Loop while GPIO pin has not reached the expected logic level. */
+	while(gpio_get_level(DHT_gpio) != level){
+		/* make sure that we are not waiting forever for this pin to reach desired level */
+		if((esp_timer_get_time() - start_time) > timeout_us){
+			return false;
+		}
+	}
+	return true;
+}
