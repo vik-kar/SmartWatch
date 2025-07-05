@@ -72,5 +72,7 @@ void get_time(char *buffer, size_t max_len){
 	struct tm timeinfo;
 	time(&now);
 	localtime_r(&now, &timeinfo);
-	strftime(buffer, max_len, "%H:%M:%S", &timeinfo);
+
+	/* 12 hour format, ignore seconds */
+	strftime(buffer, max_len, "%I:%M %p", &timeinfo);
 }
