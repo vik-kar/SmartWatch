@@ -39,13 +39,6 @@ void app_main() {
     /* Initialize and start WiFi */
     wifi_connection_start();
 
-    /* initialize SNTP */
-    //sntp_service_init();
-
-//    if(ret != ESP_OK){
-//    	ESP_LOGE(TAG, "WiFi failed, but letting app_main exit to avoid WDT");
-//    }
-
     /* create semaphore */
     i2cbus = xSemaphoreCreateBinary();
 
