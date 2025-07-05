@@ -7,15 +7,20 @@
 #include "adxl.h"
 #include "freertos/semphr.h"
 #include "wifi_connect.h"
+#include "sntp_service.h"
 
 #define TAG "main.c"
 
 /* Synchronization primitives */
 SemaphoreHandle_t i2cbus;
 TaskHandle_t read_adxl;
+TaskHandle_t sntp_task;
+
+int sntp_initialized = 0;
 
 /* Task/function headers */
 void accelerometer_read (void *pvParameters);
+void sntp_time (void *pvParameters);
 void write_to_display(const char* string, uint8_t col, uint8_t page);
 
 char wifi_ssid[] = "Vikram's iphone";
@@ -34,6 +39,9 @@ void app_main() {
     /* Initialize and start WiFi */
     wifi_connection_start();
 
+    /* initialize SNTP */
+    //sntp_service_init();
+
 //    if(ret != ESP_OK){
 //    	ESP_LOGE(TAG, "WiFi failed, but letting app_main exit to avoid WDT");
 //    }
@@ -49,6 +57,14 @@ void app_main() {
 				1,
 				&read_adxl);
 
+    /* Create SNTP task */
+    xTaskCreate(sntp_time,
+    			"sntp_time",
+				4096,
+				NULL,
+				1,
+				&sntp_task);
+
     /* Give semaphore to make it available */
     xSemaphoreGive(i2cbus);
 
@@ -56,6 +72,17 @@ void app_main() {
     	vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
+
+void sntp_time(void *pvParameters){
+    while(!sntp_initialized){}
+    char buffer[32];
+    while(1){
+        get_time(buffer, sizeof(buffer));
+        write_to_display(buffer, 0, 0);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
 
 void accelerometer_read(void *pvParameters){
 	/* declare buffer and variables */

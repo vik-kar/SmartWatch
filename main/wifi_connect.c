@@ -4,6 +4,7 @@
 #include "esp_netif.h"
 #include "nvs_flash.h"
 #include "main.h"
+#include "sntp_service.h"
 #include <string.h>
 
 /* SSID and Password for connection */
@@ -91,7 +92,7 @@ static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
 
 	case IP_EVENT_STA_GOT_IP:
 		ESP_LOGI(TAG, "Got IP address. Initializing SNTP Service.");
-
+		sntp_service_init();
 	}
 
 }

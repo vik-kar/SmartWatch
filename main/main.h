@@ -5,5 +5,7 @@
 #include "esp_event.h"
 
 void draw_wifi(void);
+extern int sntp_initialized;
+
 
 #endif

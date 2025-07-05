@@ -2,6 +2,7 @@
 #include "esp_log.h"
 #include "esp_sntp.h"
 #include <time.h>
+#include "main.h"
 #include <string.h>
 
 /* Logging tag */
@@ -56,6 +57,20 @@ void sntp_service_init(void){
 		char time_string[32];
 		strftime(time_string, sizeof(time_string), "%H:%M:%S", &timeinfo);
 		ESP_LOGI(TAG, "Time synchronized: %s", time_string);
+
+		/* Set flag (in main) so we can call get_time() */
+		sntp_initialized = 1;
+	}
+	else{
+		ESP_LOGI(TAG, "SNTP Timeout.");
 	}
 
+}
+
+void get_time(char *buffer, size_t max_len){
+	time_t now;
+	struct tm timeinfo;
+	time(&now);
+	localtime_r(&now, &timeinfo);
+	strftime(buffer, max_len, "%H:%M:%S", &timeinfo);
 }
