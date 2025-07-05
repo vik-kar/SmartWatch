@@ -20,7 +20,7 @@ static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t eve
 void wifi_connection_start(void){
 	ESP_LOGI(TAG, "Starting WiFi connection - station mode");
 
-	/* Initialize NVS for credential storage */
+	/* Initialize NVS for configuration (and later credential) storage */
 	esp_err_t ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
 		ESP_ERROR_CHECK(nvs_flash_erase());
@@ -57,7 +57,7 @@ void wifi_connection_start(void){
 	};
 
 	/* Now, actually set these configured parameters
-	   - WIFI_IF_STA: WiFi station interface (apply the wifi_config to the station interface
+	   - WIFI_IF_STA: WiFi station interface (apply the wifi_config to the station interface)
 	*/
 	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
 
@@ -87,7 +87,12 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 }
 
 static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
+	switch(event_id){
 
+	case IP_EVENT_STA_GOT_IP:
+		ESP_LOGI(TAG, "Got IP address. Initializing SNTP Service.");
+
+	}
 
 }
 

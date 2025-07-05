@@ -383,49 +383,26 @@ void display_wifi_symbol() {
     // Converting to SSD1306 format: 8 bytes for page 0, 8 bytes for page 1
 
     // Top 8 rows (page 0) - extracting bits 8-15 from each column
-//    const uint8_t wifi_page0[] = {
-//        0x71,  // Column 0: 01110001
-//        0xE3,  // Column 1: 11100011
-//        0xE6,  // Column 2: 11100110
-//        0xE6,  // Column 3: 11100110
-//        0xE6,  // Column 4: 11100110
-//        0xE6,  // Column 5: 11100110
-//        0xE3,  // Column 6: 11100011
-//        0x71   // Column 7: 01110001
-//    };
-//
-//    // Bottom 8 rows (page 1) - extracting bits 0-7 from each column
-//    const uint8_t wifi_page1[] = {
-//        0xC0,  // Column 0: 11000000
-//        0x80,  // Column 1: 10000000
-//        0x06,  // Column 2: 00000110
-//        0x0F,  // Column 3: 00001111
-//        0x0F,  // Column 4: 00001111
-//        0x06,  // Column 5: 00000110
-//        0x80,  // Column 6: 10000000
-//        0xC0   // Column 7: 11000000
-//    };
-
     const uint8_t wifi_page0[] = {
-        0x1E,  // Column 0: 00011110
-		0x0E,  // Column 1: 00001110
-		0x07,  // Column 2: 00000111
-		0x07,  // Column 3: 00000111
-		0x07,  // Column 4: 00000111
-		0x07,  // Column 5: 00000111
-		0x0E,  // Column 6: 00001110
-		0x1E   // Column 7: 00011110
+        0x9E,  // Column 0: 10011110
+		0x8E,  // Column 1: 10001110
+		0xC7,  // Column 2: 11000111
+		0xC7,  // Column 3: 11000111
+		0xC7,  // Column 4: 11000111
+		0xC7,  // Column 5: 11000111
+		0x8E,  // Column 6: 10001110
+		0x9E   // Column 7: 10011110
     };
 
     const uint8_t wifi_page1[] = {
-        0x1E,  // Column 0: 00011110
-		0x0E,  // Column 1: 00001110
-		0x87,  // Column 2: 10000111
-		0xC7,  // Column 3: 11000111
-		0xC7,  // Column 4: 11000111
-		0x87,  // Column 5: 10000111
-		0x0E,  // Column 6: 00001110
-		0x1E   // Column 7: 00011110
+        0x1F,  // Column 0: 00011111
+		0x0B,  // Column 1: 00001011
+		0x41,  // Column 2: 01000001
+		0xE1,  // Column 3: 11100001
+		0xE1,  // Column 4: 11100001
+		0x41,  // Column 5: 01000001
+		0x09,  // Column 6: 00001001
+		0x1F   // Column 7: 00011111
     };
 
     // Draw page 0 (top half)
