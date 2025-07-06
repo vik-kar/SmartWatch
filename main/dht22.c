@@ -7,6 +7,9 @@
 #define DHT_gpio GPIO_NUM_4
 #define TAG "DHT22"
 
+float humidity = 0;
+float temperature = 0;
+
 /* Define a function to generate delays in microseconds */
 static void microsec_delay(uint32_t delay){
 	esp_rom_delay_us(delay);
@@ -31,13 +34,15 @@ void dht22_start_signal(){
 }
 
 /* wait_level function waits for the DHT_gpio to reach a logic level of 1 or 0.
- * If this expected level is not reached within a certain number of us, it returns false (timeout)
+ * If this expected level is not reached within a certain number of microsec, it returns false (timeout)
  */
 static bool dht22_wait_level(int level, uint32_t timeout_us){
 	/* Get current time */
 	uint32_t start_time = esp_timer_get_time();
 
-	/* Loop while GPIO pin has not reached the expected logic level. */
+	/* Loop while GPIO pin has not reached the expected logic level.
+	 * Ex: if we are waiting for our pin to go LOW, but it is still HIGH, we remain in this loop
+	*/
 	while(gpio_get_level(DHT_gpio) != level){
 		/* make sure that we are not waiting forever for this pin to reach desired level */
 		if((esp_timer_get_time() - start_time) > timeout_us){
@@ -46,3 +51,6 @@ static bool dht22_wait_level(int level, uint32_t timeout_us){
 	}
 	return true;
 }
+
+/* DHT values are 40 bytes, so read into a 40 byte buffer */
+static esp_err_t read_bytes()
