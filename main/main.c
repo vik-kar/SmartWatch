@@ -8,19 +8,24 @@
 #include "freertos/semphr.h"
 #include "wifi_connect.h"
 #include "sntp_service.h"
+#include "dht22.h"
+#include "dht22_2.h"
 
 #define TAG "main.c"
 
 /* Synchronization primitives */
 SemaphoreHandle_t i2cbus;
-TaskHandle_t read_adxl;
-TaskHandle_t sntp_task;
+TaskHandle_t ADXL_TaskHandle;
+TaskHandle_t SNTP_TaskHandle;
+TaskHandle_t DHT22_TaskHandle;
 
 int sntp_initialized = 0;
 
 /* Task/function headers */
 void accelerometer_read (void *pvParameters);
 void sntp_time (void *pvParameters);
+void get_temperature(void *pvParameters);
+
 void write_to_display(const char* string, uint8_t col, uint8_t page);
 
 char wifi_ssid[] = "Vikram's iphone";
@@ -40,7 +45,7 @@ void app_main() {
     wifi_connection_start();
 
     /* create semaphore */
-    i2cbus = xSemaphoreCreateBinary();
+    i2cbus = xSemaphoreCreateMutex();
 
     /* Create task to read ADXL data */
     xTaskCreate(accelerometer_read,
@@ -48,7 +53,7 @@ void app_main() {
 				2048,
 				NULL,
 				1,
-				&read_adxl);
+				&ADXL_TaskHandle);
 
     /* Create SNTP task */
     xTaskCreate(sntp_time,
@@ -56,10 +61,18 @@ void app_main() {
 				4096,
 				NULL,
 				1,
-				&sntp_task);
+				&SNTP_TaskHandle);
+
+    /* Create DHT22 sensor task */
+    xTaskCreate(get_temperature,
+    			"get_temperature",
+				4096,
+				NULL,
+				1,
+				&DHT22_TaskHandle);
 
     /* Give semaphore to make it available */
-    xSemaphoreGive(i2cbus);
+    //xSemaphoreGive(i2cbus);
 
     while(1){
     	vTaskDelay(pdMS_TO_TICKS(1000));
@@ -102,6 +115,21 @@ void accelerometer_read(void *pvParameters){
 	}
 }
 
+void get_temperature(void *pvParameters){
+	float temp;
+	char buffer[18];
+	esp_err_t ret;
+	while(1){
+		ret = readDHT(&temp);
+		if(ret == ESP_OK){
+			ESP_LOGI(TAG, "Got temperature readings from sensor");
+			snprintf(buffer, sizeof(buffer), "%.1f F", temp);
+			write_to_display(buffer, 0, 1);
+		}
+		vTaskDelay(pdMS_TO_TICKS(3000));
+	}
+}
+
 void write_to_display(const char* string, uint8_t col, uint8_t page){
 	if(xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))){
 		display_burst_write_string(string, col, page);
@@ -117,48 +145,5 @@ void draw_wifi(void){
 	}
 }
 
-//void wifi_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-//	/* Log what event we just witnessed */
-//	ESP_LOGI(TAG, "WiFi Event Callback: base=%s, id=%" PRId32, event_base, event_id);
-//
-//	/* Enter a switch to handle the event */
-//	switch(event_id){
-//		case WIFI_EVENT_STA_START:
-//			ESP_LOGI(TAG, "WIFI_EVENT_STA_START");
-//			ESP_ERROR_CHECK(esp_wifi_connect());
-//			break;
-//
-//		case WIFI_EVENT_STA_CONNECTED:
-//			xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
-//			ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED = %d", WIFI_EVENT_STA_CONNECTED);
-//			if (xSemaphoreTake(i2cbus, pdMS_TO_TICKS(portMAX_DELAY))) {
-//				ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
-//				draw_wifi_icon(WIFI_LOGO_COL, WIFI_LOGO_PAGE);
-//				xSemaphoreGive(i2cbus);
-//			}
-//			break;
-//
-//		case WIFI_EVENT_STA_DISCONNECTED:
-//		    {
-//		        wifi_event_sta_disconnected_t* disconnected = (wifi_event_sta_disconnected_t*) event_data;
-//		        ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED, reason: %d", disconnected->reason);
-//
-//		        /* Retry */
-//		        //ESP_ERROR_CHECK(esp_wifi_connect());
-//		    }
-//		    break;
-//
-//		default:
-//			ESP_LOGI(TAG, "Unhandled WiFi Event ID: %" PRId32, event_id);
-//			break;
-//	}
-//
-//}
-//
-//void ip_event_cb(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data){
-//	/* Log what event we just witnessed */
-//	ESP_LOGI(TAG, "IP Event Callback: base=%s, id=%" PRId32, event_base, event_id);
-//
-//}
 
 
