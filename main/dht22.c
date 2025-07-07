@@ -8,9 +8,6 @@
 #define DHT_gpio GPIO_NUM_4
 #define TAG "DHT22"
 
-float humidity = 0;
-float temperature = 0;
-
 /* Define a function to generate delays in microseconds */
 static void microsec_delay(uint32_t delay){
 	esp_rom_delay_us(delay);
@@ -32,6 +29,9 @@ void dht22_start_signal(){
 	/* Pull pin HIGH for 20-40 us */
 	gpio_set_level(DHT_gpio, 1);
 	microsec_delay(30);
+
+	/* Set GPIO pin back to input mode */
+	gpio_set_direction(DHT_gpio, GPIO_MODE_INPUT);
 }
 
 /* wait_level function waits for the DHT_gpio to reach a logic level of 1 or 0.
@@ -97,11 +97,54 @@ static esp_err_t read_bytes(uint8_t *data){
 		if(duration > 50){
 			data[byte] |= 1;
 		}
-		return ESP_OK;
 	}
+	return ESP_OK;
 }
 
+esp_err_t get_readings(float *temperature){
+	uint8_t data[5] = {0};
 
+	dht22_start_signal();
+
+	/* Check that sensor responds to start signal by pulling LOW for 80ms then HIGH for 80 ms */
+	if(!wait_level(0, 80)) return ESP_ERR_TIMEOUT;
+	if(!wait_level(1, 80)) return ESP_ERR_TIMEOUT;
+
+	if(read_bytes(data) != ESP_OK){
+		return ESP_FAIL;
+	}
+
+	/* Checksum - sum of the first 4 bytes, then take the lowest 8 bits of the result.
+	 * Due to wraparound, we don't need to do & 0xFF since the LSB is kept in an overflow anyway
+	*/
+	if(data[4] != (data[0] + data[1] + data[2] + data[3])){
+		return ESP_ERR_INVALID_CRC;
+	}
+
+	/* Data parsing
+	 * data[2] = temperature HIGH byte
+	 * data[3] = temperature LOW byte
+	*/
+
+	uint16_t temp_raw = (data[2] << 8) | data[3];
+
+	/* If bit 15 in temp_raw = 1, temp is negative */
+	if(temp_raw & 0x8000){
+		/* Clear negative bit to get the actual temp */
+		temp_raw &= 0x7FFF;
+
+		/* DHT22 scales values by 10, divide by 10.0 to get the actual temp + float structure */
+		float temp_temperature = -1 * (temp_raw / 10.0);
+
+		/* Convert to Farenheight */
+		*temperature = (temp_temperature * 1.8) + 32;
+	}
+	else{
+		*temperature = temp_raw / 10.0;
+	}
+
+	return ESP_OK;
+}
 
 
 
