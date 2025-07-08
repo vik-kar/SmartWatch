@@ -102,13 +102,13 @@ void accelerometer_read(void *pvParameters){
 				xSemaphoreGive(i2cbus);
 
 				sprintf(buffer, "X:%f", (x * 0.0078));
-				write_to_display(buffer, 0, 3);
+				write_to_display(buffer, 0, 2);
 
 				sprintf(buffer, "Y:%f", (y * 0.0078));
-				write_to_display(buffer, 0, 4);
+				write_to_display(buffer, 0, 3);
 
 				sprintf(buffer, "Z:%f", (z * 0.0078));
-				write_to_display(buffer, 0, 5);
+				write_to_display(buffer, 0, 4);
 			}
 		}
 		vTaskDelay(pdMS_TO_TICKS(200));

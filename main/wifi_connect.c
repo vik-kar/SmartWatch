@@ -80,6 +80,14 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 		draw_wifi();
 		break;
 
+	case WIFI_EVENT_STA_DISCONNECTED: {
+	    wifi_event_sta_disconnected_t* disconn = (wifi_event_sta_disconnected_t*) event_data;
+	    ESP_LOGW(TAG, "Disconnected from WiFi. Reason: %d", disconn->reason);
+	    esp_wifi_connect();
+	    break;
+	}
+
+
 	default:
 		ESP_LOGI(TAG, "Unhandled IP Event ID: %" PRId32, event_id);
 		break;

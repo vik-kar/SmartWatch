@@ -311,7 +311,7 @@ esp_err_t i2c_read_register(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, s
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 
-	/* Write address of the register */
+	/* Write address of the device */
 	i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, true); /* send first byte: address + r/w bit */
 	i2c_master_write_byte(cmd, reg_addr, true);
 
